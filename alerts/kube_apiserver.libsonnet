@@ -3,8 +3,10 @@ local utils = import 'utils.libsonnet';
 {
   _config+:: {
     kubeApiserverSelector: error 'must provide selector for kube-apiserver',
+    kubeApiserverRequestTerminationsSelector: error 'must provide selector for kube-apiserver-request-terminations',
 
     kubeAPILatencyWarningSeconds: 1,
+    kubeAPIRequestTerminationsPercent: 0.30,
 
     certExpirationWarningSeconds: 7 * 24 * 3600,
     certExpirationCriticalSeconds: 1 * 24 * 3600,
@@ -102,6 +104,20 @@ local utils = import 'utils.libsonnet';
           (import '../lib/absent_alert.libsonnet') {
             componentName:: 'KubeAPI',
             selector:: $._config.kubeApiserverSelector,
+          },
+          {
+            alert: 'KubeAPITerminatedRequests',
+            expr: |||
+              sum(rate(apiserver_request_terminations_total{%(kubeApiserverRequestTerminationsSelector)s}[10m]))  / (  sum(rate(apiserver_request_total{%(kubeApiserverRequestTerminationsSelector)s}[10m])) + on(apiserver,resource,verbs,service,namespace) group_left sum(rate(apiserver_request_terminations_total{%(kubeApiserverRequestTerminationsSelector)s}[10m]))  ) > %(kubeAPIRequestTerminationsPercent)s
+            ||| % $._config,
+            labels: {
+              severity: 'warning',
+            },
+            annotations: {
+              description: 'The apiserver has terminated {{ $value | humanizePercentage }} of its incoming requests.',
+              summary: 'The apiserver has terminated {{ $value | humanizePercentage }} of its incoming requests.',
+            },
+            'for': '5m',
           },
         ],
       },
