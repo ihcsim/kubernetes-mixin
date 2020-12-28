@@ -108,7 +108,7 @@ local utils = import 'utils.libsonnet';
           {
             alert: 'KubeAPITerminatedRequests',
             expr: |||
-              sum(rate(apiserver_request_terminations_total{%(kubeApiserverRequestTerminationsSelector)s}[10m]))  / (  sum(rate(apiserver_request_total{%(kubeApiserverRequestTerminationsSelector)s}[10m])) + on(apiserver,resource,verbs,service,namespace) sum(rate(apiserver_request_terminations_total{%(kubeApiserverRequestTerminationsSelector)s}[10m]))  ) > %(kubeAPIRequestTerminationsPercent)s
+              sum(rate(apiserver_request_terminations_total{%(kubeApiserverRequestTerminationsSelector)s}[10m]))  / (  sum(rate(apiserver_request_total{%(kubeApiserverRequestTerminationsSelector)s}[10m])) + sum(rate(apiserver_request_terminations_total{%(kubeApiserverRequestTerminationsSelector)s}[10m])) ) > %(kubeAPIRequestTerminationsPercent)s
             ||| % $._config,
             labels: {
               severity: 'warning',
