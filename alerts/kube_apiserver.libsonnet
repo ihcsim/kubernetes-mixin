@@ -108,14 +108,14 @@ local utils = import 'utils.libsonnet';
           {
             alert: 'KubeAPITerminatedRequests',
             expr: |||
-              sum(rate(apiserver_request_terminations_total{%(kubeApiserverRequestTerminationsSelector)s}[10m]))  / (  sum(rate(apiserver_request_total{%(kubeApiserverRequestTerminationsSelector)s}[10m])) + sum(rate(apiserver_request_terminations_total{%(kubeApiserverRequestTerminationsSelector)s}[10m])) ) > %(kubeAPIRequestTerminationsPercent)s
+              sum(rate(apiserver_request_terminations_total{%(kubeApiserverRequestTerminationsSelector)s}[10m])) by (resource)  / (  sum(rate(apiserver_request_total{%(kubeApiserverRequestTerminationsSelector)s}[10m])) by (resource) + sum(rate(apiserver_request_terminations_total{%(kubeApiserverRequestTerminationsSelector)s}[10m])) by (resource)) > %(kubeAPIRequestTerminationsPercent)s
             ||| % $._config,
             labels: {
               severity: 'warning',
             },
             annotations: {
-              description: 'The apiserver has terminated {{ $value | humanizePercentage }} of its incoming requests.',
-              summary: 'The apiserver has terminated {{ $value | humanizePercentage }} of its incoming requests.',
+              description: 'The apiserver has terminated {{ $value | humanizePercentage }} of incoming {{ $labels.resource }} requests.',
+              summary: 'The apiserver has terminated {{ $value | humanizePercentage }} of incoming {{ $labels.resource }} requests.',
             },
             'for': '5m',
           },

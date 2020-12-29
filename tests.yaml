@@ -643,9 +643,9 @@ tests:
 
 - interval: 1m
   input_series:
-  - series: 'apiserver_request_terminations_total{job="kube-apiserver",apiserver="kube-apiserver"}'
+  - series: 'apiserver_request_terminations_total{job="kube-apiserver",apiserver="kube-apiserver",resource="pods"}'
     values: '1+1x10'
-  - series: 'apiserver_request_total{job="kube-apiserver",apiserver="kube-apiserver"}'
+  - series: 'apiserver_request_total{job="kube-apiserver",apiserver="kube-apiserver",resource="pods"}'
     values: '1+2x10'
   alert_rule_test:
   - eval_time: 5m    # alert hasn't fired
@@ -654,8 +654,9 @@ tests:
     alertname: KubeAPITerminatedRequests
     exp_alerts:
     - exp_labels:
+        resource: pods
         severity: warning
       exp_annotations:
-        summary: "The apiserver has terminated 33.33% of its incoming requests."
-        description: "The apiserver has terminated 33.33% of its incoming requests."
+        summary: "The apiserver has terminated 33.33% of incoming pods requests."
+        description: "The apiserver has terminated 33.33% of incoming pods requests."
         runbook_url: "https://github.com/kubernetes-monitoring/kubernetes-mixin/tree/master/runbook.md#alert-name-kubeapiterminatedrequests"
